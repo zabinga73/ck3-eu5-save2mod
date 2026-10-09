@@ -31,6 +31,8 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--no-characters", action="store_true", help="let EU5 generate rulers instead of converting them")
     c.add_argument("--ck3-title-names", action="store_true",
                    help="use the names CK3 shows (historical names, renames) instead of CK3's default title names")
+    c.add_argument("--eu5-tag-names", action="store_true",
+                   help="keep EU5's tag-specific naming rules for reused tags (a CK3 Egypt on MAM shows as the Mamluks)")
     c.add_argument("--game-version", default="", help="EU5 version for the mod metadata, e.g. 1.4.*")
     c.add_argument("--subject-tier", choices=["county", "duchy", "kingdom", "empire"], default="kingdom",
                    help="lowest CK3 vassal tier that becomes an EU5 subject (default kingdom)")
@@ -89,7 +91,8 @@ def main(argv: list[str] | None = None) -> int:
                    subject_min_tier={"county": 1, "duchy": 2, "kingdom": 3, "empire": 4}[a.subject_tier],
                    keep_admin_realms_whole=not a.split_admin_realms, split_exclaves=not a.keep_exclaves,
                    fill_enclaves=not a.no_fill_pockets,
-                   exclave_sea_hop=a.sea_hops, ck3_title_names=a.ck3_title_names)
+                   exclave_sea_hop=a.sea_hops, ck3_title_names=a.ck3_title_names,
+                   own_names_for_tag_rules=not a.eu5_tag_names)
 
     def prog(f, msg=""):
         print(f"[{int(f * 100):3d}%] {msg}", flush=True)

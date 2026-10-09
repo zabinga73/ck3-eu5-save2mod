@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.7
+- The Egypt/Mamluks name fix is an option (on by default).
+
 ## 0.1.6
 - Ruler stats rescaled: ADM = 45% stewardship + 45% learning + 10% intrigue, DIP = 85% diplomacy + 15% intrigue, MIL = 85% martial + 15% intrigue, with one multiplier per save so the best value is 100 (they were far below vanilla's).
 - Egypt no longer shows as the Mamluks when a CK3 realm takes EU5's MAM tag: EU5's MAM-only naming rules are switched off in the mod.

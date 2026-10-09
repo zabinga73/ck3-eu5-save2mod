@@ -810,7 +810,7 @@ class ModWriter:
         Mamluks') is taken out of those rules: each 'tag = MAM' in EU5's
         naming files becomes 'always = no', so the CK3 realm shows its name."""
         tags = [t for t in TAG_NAME_RULES if t in self.w.reused_tags]
-        if not tags:
+        if not tags or not self.w.options.own_names_for_tag_rules:
             return
         pat = re.compile(r"\btag\s*=\s*(" + "|".join(tags) + r")\b")
         n = 0

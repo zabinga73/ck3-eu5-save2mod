@@ -378,8 +378,11 @@ class MainWindow(QMainWindow):
         self.title_names.setToolTip("New countries take the name CK3 shows; reused EU5 countries only when it "
                                     "differs from CK3's default name for the title")
         grid.addWidget(self.title_names, row + 8, 0, 1, 2)
+        self.tag_rules = QCheckBox("Reused tags EU5 names by its own rules (Egypt as \"Mamluks\") show the CK3 realm's name")
+        self.tag_rules.setToolTip("Switches off EU5's tag-specific naming rules for MAM when a CK3 realm takes that tag")
+        grid.addWidget(self.tag_rules, row + 9, 0, 1, 2)
         self.recompute_map = QCheckBox("Recompute map alignment (ignore cache)")
-        grid.addWidget(self.recompute_map, row + 9, 0)
+        grid.addWidget(self.recompute_map, row + 10, 0)
         lay.addWidget(o)
 
         btns = QHBoxLayout()
@@ -435,6 +438,7 @@ class MainWindow(QMainWindow):
         self.game_version.setText(gv if gv and gv not in OLD_GAME_VERSION_DEFAULTS else DEFAULT_GAME_VERSION)
         self.chars.setChecked(bool(s.get("chars", True)))
         self.title_names.setChecked(bool(s.get("title_names", False)))
+        self.tag_rules.setChecked(bool(s.get("tag_rules", True)))
 
     def _store(self):
         self.settings.update({
@@ -446,7 +450,7 @@ class MainWindow(QMainWindow):
             "admin_whole": self.admin_whole.isChecked(), "exclaves": self.exclaves.isChecked(),
             "sea_hops": self.sea_hops.value(), "pockets": self.pockets.isChecked(),
             "game_version": self.game_version.text().strip(), "chars": self.chars.isChecked(),
-            "title_names": self.title_names.isChecked()})
+            "title_names": self.title_names.isChecked(), "tag_rules": self.tag_rules.isChecked()})
         save_settings(self.settings)
 
     def options(self) -> Options:
@@ -461,7 +465,7 @@ class MainWindow(QMainWindow):
             exclave_sea_hop=self.sea_hops.value(),
             dev_multiplier=self.dev_mult.value(), mod_name=self.name.text().strip() or "CK3 Conversion",
             convert_characters=self.chars.isChecked(), game_version=self.game_version.text().strip(),
-            ck3_title_names=self.title_names.isChecked())
+            ck3_title_names=self.title_names.isChecked(), own_names_for_tag_rules=self.tag_rules.isChecked())
 
     # ------------------------------------------------------------ actions
     @Slot(str)
