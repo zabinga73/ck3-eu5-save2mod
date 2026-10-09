@@ -385,8 +385,12 @@ class MainWindow(QMainWindow):
         self.tag_gov.setToolTip("Removes mamluk_government, the mamluk_* laws and the Mamluk regnal numbers that a "
                                 "reused MAM otherwise keeps from vanilla")
         grid.addWidget(self.tag_gov, row + 10, 0, 1, 2)
+        self.trait_skills = QCheckBox("Ruler stats include CK3 trait && education skill bonuses (off: base skills only)")
+        self.trait_skills.setToolTip("Adds the flat skill bonuses of each CK3 trait (education, personality, "
+                                     "congenital…) before the ADM/DIP/MIL formula; perks and other bonuses aren't counted")
+        grid.addWidget(self.trait_skills, row + 11, 0, 1, 2)
         self.recompute_map = QCheckBox("Recompute map alignment (ignore cache)")
-        grid.addWidget(self.recompute_map, row + 11, 0)
+        grid.addWidget(self.recompute_map, row + 12, 0)
         lay.addWidget(o)
 
         btns = QHBoxLayout()
@@ -444,6 +448,7 @@ class MainWindow(QMainWindow):
         self.title_names.setChecked(bool(s.get("title_names", False)))
         self.tag_rules.setChecked(bool(s.get("tag_rules", True)))
         self.tag_gov.setChecked(bool(s.get("tag_gov", False)))
+        self.trait_skills.setChecked(bool(s.get("trait_skills", False)))
 
     def _store(self):
         self.settings.update({
@@ -456,7 +461,7 @@ class MainWindow(QMainWindow):
             "sea_hops": self.sea_hops.value(), "pockets": self.pockets.isChecked(),
             "game_version": self.game_version.text().strip(), "chars": self.chars.isChecked(),
             "title_names": self.title_names.isChecked(), "tag_rules": self.tag_rules.isChecked(),
-            "tag_gov": self.tag_gov.isChecked()})
+            "tag_gov": self.tag_gov.isChecked(), "trait_skills": self.trait_skills.isChecked()})
         save_settings(self.settings)
 
     def options(self) -> Options:
@@ -472,7 +477,7 @@ class MainWindow(QMainWindow):
             dev_multiplier=self.dev_mult.value(), mod_name=self.name.text().strip() or "CK3 Conversion",
             convert_characters=self.chars.isChecked(), game_version=self.game_version.text().strip(),
             ck3_title_names=self.title_names.isChecked(), own_names_for_tag_rules=self.tag_rules.isChecked(),
-            strip_tag_government=self.tag_gov.isChecked())
+            strip_tag_government=self.tag_gov.isChecked(), trait_skills=self.trait_skills.isChecked())
 
     # ------------------------------------------------------------ actions
     @Slot(str)

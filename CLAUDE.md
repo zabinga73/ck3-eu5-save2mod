@@ -5,7 +5,7 @@ A Python tool (PySide6 GUI and CLI) that converts a Crusader Kings III save into
 ## How to work with the owner
 - Ask at ANY design crossroads. Don't guess on choices that change gameplay. Ambiguous table rows (cultures, faiths, buildings) go to the owner as questions.
 - Be direct and concise.
-- Every release gets a new version number (0.1.8 is the latest). Never reuse one. Bump `save2mod/__init__.py`, the README and `CHANGELOG.md` together.
+- Every release gets a new version number (0.1.9 is the latest). Never reuse one. Bump `save2mod/__init__.py`, the README and `CHANGELOG.md` together.
 - Keep the README to bare program info. History goes in CHANGELOG.md.
 - The repo is public under the MIT license. Never commit game files.
 - Stay independent of the ParadoxGameConverters CK3ToEU5 project. Don't copy its code.
@@ -40,7 +40,7 @@ A Python tool (PySide6 GUI and CLI) that converts a Crusader Kings III save into
 - Exclaves: parts not connected to the capital through own or subject land, a strait, or at most 2 sea, lake or wasteland locations become vassals with EU5-generated rulers. Every exclave counts, whatever its size.
 - HRE: rebuilt if e_hre is held. All of the emperor's direct vassals, counts included, become independent members.
 - Tags: reuse a matching EU5 tag (by name, or the title_tags.csv realm list) only if the realm overlaps that tag's 1337 land; reused tags keep their land outside the CK3 map. Otherwise a new tag with the CK3 name, colour and coat of arms. EU5's "historic" tags are never reused.
-- Stats: ADM = 45% stewardship + 45% learning + 10% intrigue, DIP = 85% diplomacy + 15% intrigue, MIL = 85% martial + 15% intrigue (CK3 base skills, prowess unused), one multiplier per save so the best value is 100.
+- Stats: ADM = 45% stewardship + 45% learning + 10% intrigue, DIP = 85% diplomacy + 15% intrigue, MIL = 85% martial + 15% intrigue (CK3 base skills, prowess unused), one multiplier per save so the best value is 100. Toggle `trait_skills` (default off) first adds each trait's flat skill bonuses from common/traits (culture- and xp-dependent parts, perks and other bonuses are not counted).
 - Names: a reused tag that EU5 names by tag-specific rules (MAM → Mamluks) gets those rules switched off (toggle `own_names_for_tag_rules`, default on) ('tag = MAM' → 'always = no' in copies of customizable_localization files). The HRE emperor's country is named after his highest non-HRE title, ties broken by the title holding his capital, then by most of his counties.
 - A reused MAM keeps vanilla's government block when religion group and government type match; toggle `strip_tag_government` (default off) drops mamluk_government, mamluk_* laws and regnal numbers.
 - Characters: ruler, primary spouse and primary heir only. Rulers are aged up to at least 16. EU5 derives heirs itself.

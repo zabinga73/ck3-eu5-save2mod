@@ -2,7 +2,7 @@
 
 Converts a Crusader Kings III save into a Europa Universalis V mod. The mod keeps EU5's map and 1337 start, and replaces the land covered by the CK3 map with the realms, rulers, cultures, religions, development, control and buildings from the save.
 
-Version 0.1.8. Targets EU5 1.4 and CK3 1.20 (older CK3 saves still load).
+Version 0.1.9. Targets EU5 1.4 and CK3 1.20 (older CK3 saves still load).
 
 ## Requirements
 

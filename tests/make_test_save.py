@@ -34,6 +34,9 @@ FAITH_BY_CULTURE_FAMILY = {
 }
 
 
+# trait names (older saves store names, newer ones lookup indices; both are read)
+TEST_TRAITS = ["education_martial_4", "education_diplomacy_4", "cynical", "arbitrary"]
+
 def _blk(d, ind=1):
     t = "\t" * ind
     out = []
@@ -96,7 +99,8 @@ def make_save(ck3, path: str, *, seed: int = 1, kingdoms: list[str] | None = Non
         chars[cid] = [("first_name", f'"{fn}"'), ("birth", f"{y}.{rnd.randint(1, 12)}.{rnd.randint(1, 28)}")]
         if female:
             chars[cid].append(("female", "yes"))
-        chars[cid] += [("culture", culture), ("faith", fth), ("dynasty_house", house), ("skill", sk)]
+        chars[cid] += [("culture", culture), ("faith", fth), ("dynasty_house", house), ("skill", sk),
+                       ("traits", [TEST_TRAITS[len(chars) % len(TEST_TRAITS)]])]
         char_meta[cid] = {"female": female, "family": [], "landed": None, "children": []}
         return cid
 

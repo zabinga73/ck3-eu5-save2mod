@@ -42,6 +42,7 @@ class Options:
     ck3_title_names: bool = False      # use the save's displayed title names (historical names, renames)
     own_names_for_tag_rules: bool = True   # switch off EU5's tag-specific naming (MAM -> Mamluks) for reused tags
     strip_tag_government: bool = False     # a reused MAM loses vanilla's Mamluk reform, laws and regnal numbers
+    trait_skills: bool = False         # add CK3 trait/education skill bonuses to base skills before ADM/DIP/MIL
     mod_name: str = "CK3 Conversion"
     game_version: str = ""             # for .metadata; "" = auto-detect
 
@@ -940,6 +941,12 @@ class Converter:
             cul = self.cm.resolve(rule, None) if rule else None
             rel = self.rm.for_save_faith(sv, ch.faith)
             sk = (ch.skills + [0.0] * 6)[:6]         # dip mar ste int lea pro (prowess unused)
+            if self.o.trait_skills:
+                for t in ch.traits:
+                    name = sv.trait_names[int(t)] if t.isdigit() and int(t) < len(sv.trait_names) else t
+                    for i, b in enumerate(self.ck3.trait_skills.get(name, ())):
+                        sk[i] += b
+                sk = [max(0.0, x) for x in sk]
             dip = 0.85 * sk[0] + 0.15 * sk[3]
             mil = 0.85 * sk[1] + 0.15 * sk[3]
             adm = 0.45 * sk[2] + 0.45 * sk[4] + 0.10 * sk[3]
@@ -984,7 +991,8 @@ class Converter:
             c.adm, c.dip, c.mil = (int(_clamp(round(x * scale), 0, 100)) for x in (adm, dip, mil))
         if raw:
             w.report.append(f"STATS: ADM = 45% stewardship + 45% learning + 10% intrigue, DIP = 85% diplomacy + "
-                            f"15% intrigue, MIL = 85% martial + 15% intrigue (CK3 base skills), times {scale:.2f} "
+                            f"15% intrigue, MIL = 85% martial + 15% intrigue (CK3 base skills"
+                            f"{' + trait/education bonuses' if self.o.trait_skills else ''}), times {scale:.2f} "
                             f"so the best value in this save is 100")
         if aged_up:
             w.report.append(f"RULERS aged up to {self.o.min_ruler_age} (EU5 starts have no child rulers): "

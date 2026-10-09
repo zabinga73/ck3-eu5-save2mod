@@ -40,6 +40,7 @@ class CK3Game:
     rite_faith: dict[str, str] = field(default_factory=dict)      # CK3 1.20+
     religion_family: dict[str, str] = field(default_factory=dict)
     buildings: list[str] = field(default_factory=list)
+    trait_skills: dict[str, tuple[float, ...]] = field(default_factory=dict)   # trait -> flat dip mar ste int lea
     loc: dict[str, str] = field(default_factory=dict)
 
     @property
@@ -182,6 +183,21 @@ def load_ck3_game(path: str, log=print, *, language: str = "english") -> CK3Game
         for k, v in parse_file(f).pairs():
             if isinstance(v, Block) and not k.startswith("@"):
                 g.buildings.append(k)
+
+    # ---- traits: flat skill bonuses (top-level only; culture- and xp-dependent parts are left out)
+    for f in sorted(glob.glob(os.path.join(root, "common", "traits", "*.txt"))):
+        for k, v in parse_file(f).pairs():
+            if not isinstance(v, Block):
+                continue
+            vals = []
+            for s in ("diplomacy", "martial", "stewardship", "intrigue", "learning"):
+                x = v.get(s)
+                try:
+                    vals.append(float(x) if isinstance(x, str) else 0.0)
+                except ValueError:
+                    vals.append(0.0)
+            if any(vals):
+                g.trait_skills[k] = tuple(vals)
 
     # ---- localization
     g.loc = load_localization_dir(os.path.join(root, "localization", language))
