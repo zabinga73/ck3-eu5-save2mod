@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.9
-- Option to include CK3 trait and education skill bonuses in ruler stats (off by default).
+- Option to compute ruler stats from the skills CK3 shows on screen (off by default): traits, the spouse's +1, holy sites, character modifiers, artifacts, culture traditions, faith doctrines, dynasty legacies, special buildings and the lifestyle focus. Court positions and conditional bonuses are left out.
 
 ## 0.1.8
 - Option to drop vanilla's Mamluk government reform, laws and regnal numbers from a CK3 realm on the MAM tag (off by default).

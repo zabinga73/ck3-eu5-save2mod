@@ -35,8 +35,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="keep EU5's tag-specific naming rules for reused tags (a CK3 Egypt on MAM shows as the Mamluks)")
     c.add_argument("--strip-mamluk-government", action="store_true",
                    help="a CK3 realm on EU5's MAM tag drops vanilla's Mamluk reform, laws and regnal numbers")
-    c.add_argument("--trait-skills", action="store_true",
-                   help="add CK3 trait and education skill bonuses to the base skills before computing ADM/DIP/MIL")
+    c.add_argument("--skill-bonuses", action="store_true",
+                   help="compute ADM/DIP/MIL from the skills CK3 shows (traits, spouse, holy sites, modifiers, "
+                        "artifacts, traditions, doctrines, legacies, buildings, focus) instead of base skills")
     c.add_argument("--game-version", default="", help="EU5 version for the mod metadata, e.g. 1.4.*")
     c.add_argument("--subject-tier", choices=["county", "duchy", "kingdom", "empire"], default="kingdom",
                    help="lowest CK3 vassal tier that becomes an EU5 subject (default kingdom)")
@@ -97,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
                    fill_enclaves=not a.no_fill_pockets,
                    exclave_sea_hop=a.sea_hops, ck3_title_names=a.ck3_title_names,
                    own_names_for_tag_rules=not a.eu5_tag_names,
-                   strip_tag_government=a.strip_mamluk_government, trait_skills=a.trait_skills)
+                   strip_tag_government=a.strip_mamluk_government, skill_bonuses=a.skill_bonuses)
 
     def prog(f, msg=""):
         print(f"[{int(f * 100):3d}%] {msg}", flush=True)

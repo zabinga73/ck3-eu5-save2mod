@@ -302,14 +302,14 @@ if __name__ == "__main__":
 
 @pytest.mark.skipif(not (os.path.isdir(CK3_ROOT) and os.path.isdir(EU5_ROOT)),
                     reason="set CK3_GAME and EU5_GAME to the games' game/ folders")
-def test_trait_skills():
+def test_skill_bonuses():
     with tempfile.TemporaryDirectory() as out:
         _e, ck3, _s, base, _r = run(out)
     with tempfile.TemporaryDirectory() as out:
-        _e, _c, _s, traits, _r = run(out, trait_skills=True)
+        _e, _c, _s, traits, _r = run(out, skill_bonuses=True)
     assert ck3.trait_skills.get("education_martial_4", (0, 0))[1] > 0
     b, t = base.characters, traits.characters
     common = [k for k in b if k in t]
     assert common and any((b[k].adm, b[k].dip, b[k].mil) != (t[k].adm, t[k].dip, t[k].mil) for k in common)
     assert all(0 <= v <= 100 for c in t.values() for v in (c.adm, c.dip, c.mil))
-    assert any("trait/education" in line for line in traits.report)
+    assert any("as CK3 shows them" in line for line in traits.report)

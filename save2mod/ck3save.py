@@ -192,6 +192,7 @@ class Culture:
     heritage: str | None = None
     language: str | None = None
     parents: list[str] = field(default_factory=list)
+    traditions: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -203,6 +204,8 @@ class Faith:
     religion_tag: str | None = None
     name: str | None = None
     rite: str | None = None         # CK3 1.20+: rite key; the record is then keyed by rite id
+    doctrines: list[str] = field(default_factory=list)
+    holy_sites: list[str] = field(default_factory=list)     # holy site ids (save)
 
 
 @dataclass
@@ -231,6 +234,9 @@ class CK3Save:
     houses: dict[str, House] = field(default_factory=dict)
     dynasty_names: dict[str, str] = field(default_factory=dict)     # dynasty id -> name/key
     coats_of_arms: dict[str, Block] = field(default_factory=dict)
+    artifact_modifiers: dict[str, list[str]] = field(default_factory=dict)   # artifact id -> modifier keys
+    holy_site_types: dict[str, str] = field(default_factory=dict)            # holy site id -> type key
+    dynasty_perks: dict[str, list[str]] = field(default_factory=dict)        # dynasty id -> legacy perks
     trait_names: list[str] = field(default_factory=list)            # save trait lookup, if present
     notes: list[str] = field(default_factory=list)
 
@@ -245,7 +251,7 @@ class CK3Save:
 # -------------------------------------------------------------------- loading
 NEEDED = ("meta_data", "date", "played_character", "currently_played_characters",
           "landed_titles", "living", "provinces", "county_manager", "culture_manager",
-          "religion", "faiths", "rites", "dynasties", "coat_of_arms", "traits_lookup")
+          "religion", "faiths", "rites", "dynasties", "coat_of_arms", "traits_lookup", "artifacts")
 
 
 def _parse_section(gs: bytes, spans: list[tuple[int, int]]) -> Block:
@@ -514,7 +520,7 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
                 sv.cultures[cid] = Culture(
                     id=cid, template=cb.str("culture_template") or cb.str("template"),
                     name=cb.str("name"), heritage=cb.str("heritage"), language=cb.str("language"),
-                    parents=_ids(cb.get("parents")))
+                    parents=_ids(cb.get("parents")), traditions=_ids(cb.get("traditions")))
     log(f"Cultures: {len(sv.cultures)}")
 
     # ---- religion / faiths
@@ -533,7 +539,9 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
                 if not isinstance(fb, Block):
                     continue
                 f = Faith(id=fid, tag=fb.str("tag"), template=fb.str("template"),
-                          religion_id=fb.str("religion"), name=fb.str("name"))
+                          religion_id=fb.str("religion"), name=fb.str("name"),
+                          doctrines=[x for x in fb.getall("doctrine") if isinstance(x, str)],
+                          holy_sites=_ids(fb.get("holy_sites")))
                 if f.religion_id:
                     f.religion_tag = rel_tags.get(f.religion_id)
                 sv.faiths[fid] = f
@@ -544,17 +552,27 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
         rdb = ri.path("rites", "database") if ri is not None else None
         if isinstance(fdb, Block) and isinstance(rdb, Block):
             faith_info: dict[str, tuple[str | None, str | None, str | None]] = {}
+            faith_extra: dict[str, tuple[list[str], list[str]]] = {}
             for fid, fb in fdb.pairs():
                 if isinstance(fb, Block):
                     faith_info[fid] = (fb.str("faith_type") or fb.str("tag"), fb.str("religion"), fb.str("name"))
+                    faith_extra[fid] = ([x for x in fb.getall("doctrine") if isinstance(x, str)],
+                                        _ids(fb.get("holy_sites")))
             for rid, rb in rdb.pairs():
                 if not isinstance(rb, Block):
                     continue
                 ftype, relid, fname = faith_info.get(rb.str("faith") or "", (None, None, None))
+                docs, sites = faith_extra.get(rb.str("faith") or "", ([], []))
                 f = Faith(id=rid, tag=ftype, template=None, religion_id=relid,
-                          name=rb.path("data", "name") or fname, rite=rb.str("rite_type"))
+                          name=rb.path("data", "name") or fname, rite=rb.str("rite_type"),
+                          doctrines=docs, holy_sites=sites)
                 f.religion_tag = rel_tags.get(relid or "")
                 sv.faiths[rid] = f
+        hs = r.get("holy_sites")
+        if isinstance(hs, Block):
+            for hid, hb in hs.pairs():
+                if isinstance(hb, Block) and hb.str("holy_site_type"):
+                    sv.holy_site_types[hid] = hb.str("holy_site_type")
     log(f"Faiths: {len(sv.faiths)}")
 
     # ---- dynasties / houses
@@ -575,7 +593,20 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
                     nm = db.str("name") or db.str("localized_name") or db.str("key")
                     if nm:
                         sv.dynasty_names[did] = nm
+                    perks = [x for v in db.getall("perk") for x in _ids(v)]
+                    if perks:
+                        sv.dynasty_perks[did] = perks
     log(f"Houses: {len(sv.houses)}")
+
+    # ---- artifacts: their modifiers (for skill bonuses)
+    art = section("artifacts")
+    adb = art.path("artifacts", "artifacts") if art is not None else None
+    if isinstance(adb, Block):
+        for aid, ab in adb.pairs():
+            if isinstance(ab, Block):
+                mods = _ids(ab.get("modifiers"))
+                if mods:
+                    sv.artifact_modifiers[aid] = mods
 
     # ---- coats of arms (optional; large)
     if want_coas and "coat_of_arms" in sec:
