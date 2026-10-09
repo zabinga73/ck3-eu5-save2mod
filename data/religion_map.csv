@@ -1,0 +1,136 @@
+ck3,eu5,note
+# Curated CK3 faith -> EU5 religion table.
+# Keys may be a CK3 faith (catholic) or a CK3 religion (christianity_religion);
+# a faith row wins over its religion row. Rows marked "approximate" are best guesses
+# picks for faiths with no EU5 counterpart.
+# --- Christianity
+catholic,catholic,
+orthodox,orthodox,
+coptic,miaphysite,
+armenian_apostolic,miaphysite,
+nestorian,nestorianism,
+bogomilist,bogomilism,
+bosnian_church,bosnian_church,
+cathar,catharism,
+waldensian,waldensian,
+lollard,lollardy,user: keep Lollardy
+paulician,paulicianism,
+adamites,catharism,user: nearest EU5 heresy
+adoptionist,nestorianism,user: nearest EU5 heresy (similar christology)
+conversos,catholic,no EU5 heresy fits
+iconoclast,paulicianism,user: nearest EU5 heresy (iconoclastic)
+insular_celtic,catholic,no EU5 heresy fits
+messalian,bogomilism,user: nearest EU5 heresy
+mozarabic_church,catholic,no EU5 heresy fits
+christianity_religion,catholic,fallback for custom Christian faiths
+# --- Islam
+ashari,sunni,
+maturidi,sunni,
+mutazila,sunni,
+masmudi,sunni,
+muwalladi,sunni,
+quranist,sunni,
+imami,shia,
+ismaili,shia,
+nizari,shia,
+hafizi,shia,
+zayidi,shia,
+alawite,shia,
+alevi,shia,
+ghulat,shia,
+qarmatian,shia,
+ibadi,ibadi,
+azariqa,ibadi,Kharijite
+najdat,ibadi,Kharijite
+sufri,ibadi,Kharijite
+druze,druzism,
+islam_religion,sunni,fallback
+# --- Judaism
+rabbinism,judaism,
+karaism,judaism,
+haymanot,judaism,
+kabarism,judaism,
+malabarism,judaism,
+merkabah,judaism,
+samaritan,samaritanism,
+judaism_religion,judaism,fallback
+# --- Dualism / gnostic
+manichean,manichaeism,
+mingism,manichaeism,
+mandeaism,mandeaism,
+sabianism,mandeaism,
+cainitism,manichaeism,approximate: no EU5 equivalent
+sethianism,manichaeism,approximate: no EU5 equivalent
+valentinianism,manichaeism,approximate: no EU5 equivalent
+priscillianism,catholic,approximate: no EU5 equivalent
+dualism_religion,manichaeism,fallback
+# --- Yazidi / Zoroastrian
+yazidi_religion,yazidism,
+zoroastrianism_religion,zoroastrian,
+# --- Indian
+hinduism_religion,hindu,
+jainism_religion,jain,
+# --- Buddhism
+theravada,theravada,
+ari,theravada,
+mahayana,mahayana,
+avatamsaka,mahayana,
+dhyana,mahayana,
+maitreya,mahayana,
+pundarika,mahayana,
+sukhavati,mahayana,
+vinaya,mahayana,
+yogacara,mahayana,
+mantrayana,mahayana,
+acharya,sammitiya,approximate: Indian Buddhism -> Samitiya?
+vajrayana,tibetan_buddhism,
+lamaism,tibetan_buddhism,
+buddhism_religion,mahayana,fallback
+bon_religion,bon,
+# --- East Asia
+confucianism_religion,sanjiao,
+taoism_religion,sanjiao,
+shintoism_religion,shinto,
+# --- Pagans
+norse_pagan,norse,
+baltic_pagan,romuva,
+finnish_pagan,muinaisusko,
+slavic_pagan,komi_paganism,user: Vazeskom
+magyar_pagan,tengri,user: Tengrism
+tengri_pagan,tengri,
+hellenic_pagan,hellenism_religion,
+basque_pagan,catholic,approximate: no EU5 Basque paganism
+north_african_acham_pagan,guanche_religion,approximate: Berber paganism
+akom_pagan,akan_religion,
+west_african_bori_pagan,bori_religion,
+west_african_orisha_pagan,isese_religion,
+west_african_roog_pagan,a_fat_roog_religion,
+west_african_pagan,nyama_religion,approximate: Mande paganism
+west_african_bidu_pagan,nyama_religion,approximate: Soninke paganism
+waaqism_pagan,waaqeffanna_religion,
+ngaiism_pagan,maasai_religion,
+kushitism_pagan,muonyjang_religion,approximate: Nubian paganism
+zun_pagan,hindu,approximate: Zunbil cult
+siberian_pagan,shamanism,
+shamanism,shamanism,
+kamuyism_pagan,ainu_religion,
+utaki,utaki_religion,
+tolotang,tolotang_religion,
+kaharingan,kaharingan_religion,
+aluk,aluk_religion,
+satsana_phi,satsana_phi,
+moism,moism,
+bimoism,bimoism,
+dab_qhuas,hmongism,
+donyipoloism,donyi_polo_religion,
+sedism,donyi_polo_religion,
+kiratism,kirat_mundhum_religion,
+yumaism,kirat_mundhum_religion,
+melieism,nu_religion,approximate: Qiangic folk religion
+rrmeaism,nu_religion,approximate: Qiangic folk religion
+bilikuism,andamanese_religion,
+pulugaism,andamanese_religion,
+hantuism,orang_asli_religion,approximate: Malay folk religion
+dayawism,anitism_religion,
+mu,shamanism,approximate: Korean Muism
+pagan,shamanism,fallback

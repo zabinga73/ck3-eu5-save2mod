@@ -1,0 +1,121 @@
+ck3,eu5,eu5_rural,level_div,max_level,min_ck3_level,note
+# CK3 building family -> EU5 building.
+# ck3         = CK3 building key without its _0N level suffix (or a full key).
+# eu5         = building used when the EU5 location is a town/city/megalopolis.
+# eu5_rural   = building used when the EU5 location is a rural settlement.
+#               Empty = nothing is placed for that rank.
+# level_div   = EU5 level = ceil(CK3 level / level_div), capped at max_level.
+# min_ck3_level = CK3 buildings below this level are ignored.
+# Buildings not listed are skipped (and reported in the conversion log).
+# ---------------- farming & land
+cereal_fields,granary,farming_village,2,3,1,
+farm_estates,granary,farming_village,2,3,1,
+hill_farms,,farming_village,2,3,1,
+paddy_fields,,farming_village,2,3,1,
+orchards,fruit_orchard,fruit_orchard,2,3,1,
+plantations,fruit_orchard,fruit_orchard,2,3,1,
+spice_plantation,fruit_orchard,fruit_orchard,2,3,1,
+windmills,granary,windmill,2,3,1,
+watermills,granary,windmill,2,3,1,
+stilted_granaries,granary,farming_village,2,3,1,
+qanats,aqueduct_system,farming_village,2,3,1,
+waterworks,aqueduct_system,,2,3,1,
+pastures,,sheep_farms,2,3,1,
+hillside_grazing,,sheep_farms,2,3,1,
+horse_pastures,horse_breeders,horse_breeders,2,3,1,
+stables,horse_breeders,horse_breeders,2,3,1,
+elephant_pens,,elephant_hunting_grounds,2,3,1,
+murex_farm,,fishing_village,2,3,1,
+# ---------------- resources
+logging_camps,lumber_mill,forest_village,2,3,1,
+peat_quarries,,charcoal_maker,2,3,1,
+quarries,stone_quarry,stone_quarry,2,3,1,
+hunting_grounds,,peasants_hunting_grounds,8,1,1,
+royal_forest,,peasants_hunting_grounds,8,1,1,
+generic_copper_mines,,local_smelters,8,1,1,
+generic_gold_mines,,local_smelters,8,1,1,
+generic_silver_mines,,local_smelters,8,1,1,
+# ---------------- trade & crafts
+market_villages,marketplace,market_village,2,3,1,
+sunday_bazaar,marketplace,market_village,2,3,1,
+hamadan_bazaar,marketplace,market_village,1,3,1,
+herat_bazaar,marketplace,market_village,1,3,1,
+khiva_bazaar,marketplace,market_village,1,3,1,
+lahur_bazaar,marketplace,market_village,1,3,1,
+caravanserai,caravan_stop,caravan_stop,8,1,1,
+common_tradeport,wharf,fishing_village,8,1,1,
+guild_halls,artisan_guilds,local_markets,4,2,1,
+workshops,tools_guild,mason,2,3,1,
+smiths,weapon_guild,,2,3,1,
+blacksmiths,weapon_guild,,2,3,1,
+wind_furnace,tools_guild,,2,3,1,
+breweries,brewery,,2,3,1,
+# ---------------- military
+barracks,barracks,training_fields,2,3,1,
+military_camps,barracks,training_fields,2,3,1,
+regimental_grounds,armory,regimental_camp,2,3,1,
+warrior_lodges,barracks,training_fields,2,3,1,
+war_camps,barracks,training_fields,2,3,1,
+archery_ranges,barracks,training_fields,2,3,1,
+military_academy,armory,,2,3,1,
+royal_armory,armory,,2,3,1,
+powder_magazine,armory,,2,3,1,
+siege_works,armory,,2,3,1,
+# ---------------- fortifications
+# At most ONE fort per CK3 county: the strongest of these that clears its
+# min_ck3_level (castle > city walls > stockade, then CK3 level), placed in
+# the main EU5 location of the barony that has it.
+curtain_walls,castle,castle,8,1,5,only CK3 level 5+ becomes a castle
+ramparts,castle,castle,8,1,5,only CK3 level 5+
+hill_forts,castle,castle,8,1,5,only CK3 level 5+
+walls,city_walls,stockade,8,1,4,only CK3 level 4+
+palisades,stockade,stockade,8,1,4,only CK3 level 4+
+idjang_forts,stockade,stockade,8,1,4,only CK3 level 4+
+outposts,,,8,1,1,never converted
+watchtowers,,,8,1,1,never converted
+# ---------------- religion & learning
+temple,temple,parish_church,8,1,1,church holding
+megalith,local_shrine,local_shrine,8,1,1,
+sacred_pool,local_shrine,local_shrine,8,1,1,
+burial_site,local_shrine,local_shrine,8,1,1,
+charnel_grounds,local_shrine,local_shrine,8,1,1,
+vihara_halls,temple,local_shrine,8,1,1,
+citadel_shrine,temple,local_shrine,8,1,1,
+temple_citadel,temple,local_shrine,8,1,1,
+hospices,hospital,parish_church,8,1,1,
+monastic_schools,library,spiritual_retreat,8,1,2,
+scriptorium,scriptorium,spiritual_retreat,2,3,1,
+examination_hall,confucian_school,,8,1,1,
+generic_university,library,,8,1,1,
+siena_university,library,,8,1,1,
+sankore_university,library,,8,1,1,
+nalanda_university,library,,8,1,1,
+somapura_university,library,,8,1,1,
+al_azhar_university,al_azhar_madrasa,,8,1,1,
+al_qarawiyyin_university,library,,8,1,1,
+house_of_wisdom,library,,8,1,1,
+holy_site_cathedral,cathedral,temple,8,1,1,
+holy_site_mosque,madrasa,temple,8,1,1,
+holy_site_canterbury_cathedral,cathedral,temple,8,1,1,
+holy_site_cologne_cathedral,cathedral,temple,8,1,1,
+holy_site_st_peters_basilica,cathedral,temple,8,1,1,
+holy_site_basilica_santiago,cathedral,temple,8,1,1,
+# ---------------- government (duchy-capital style)
+tax_assessor,,,8,1,1,approximate: EU5 tax_assessor is a capital-only building
+royal_garden,,,8,1,1,approximate: EU5 royal_garden is a capital-only building
+capital_bureau,,,8,1,1,approximate
+# ---------------- wonders with an EU5 counterpart
+theodosian_walls,theodosian_walls,theodosian_walls,8,1,1,
+alhambra,alhambra,alhambra,8,1,1,
+walls_of_benin,walls_of_benin,walls_of_benin,8,1,1,
+doges_palace,doges_palace,doges_palace,8,1,1,
+forbidden_city,forbidden_city,forbidden_city,8,1,1,
+the_great_wall,ruined_great_wall_of_china,ruined_great_wall_of_china,8,1,1,
+the_great_wall_liaodong,ruined_great_wall_of_china,ruined_great_wall_of_china,8,1,1,
+the_great_wall_shanhai_pass,ruined_great_wall_of_china,ruined_great_wall_of_china,8,1,1,
+# ---------------- holding buildings (EU5 settlement rank stays vanilla)
+castle,,,8,1,1,castle holding
+city,,,8,1,1,city holding
+tribe,,,8,1,1,tribal holding
+# ---------------- any other mine (CK3 special mines)
+*_mines,,local_smelters,8,1,1,

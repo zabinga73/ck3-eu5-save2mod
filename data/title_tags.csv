@@ -1,0 +1,21 @@
+ck3_title,eu5_tag,name,adjective,last_conversion,note
+# Realms & tags. After every conversion each realm it made is listed here.
+# eu5_tag: blank = automatic (matched by English name); an EU5 tag forces that tag; '-' forces a brand-new tag.
+# name / adjective: blank = automatic; text renames the country in EU5 (works for reused tags too).
+# last_conversion: what the last conversion did with this title (refreshed on every run).
+e_byzantium,BYZ,,,,
+k_byzantium,BYZ,,,,
+k_papal_state,PAP,,,,
+e_russia,RUS,,,,
+k_rus,RUS,,,,
+k_novgorod,NOV,,,,
+k_kiev,KIE,,,,
+k_vladimir,VLR,,,,
+e_spain,SPA,,,,
+k_germany,GER,,,,
+k_italy,ITA,,,,
+k_egypt,MAM,,,,
+h_china,CHI,,,,
+e_japan,JAP,,,,
+k_goryeo,KOR,,,,
+e_hre,-,,,,the HRE is rebuilt as an international organization instead
