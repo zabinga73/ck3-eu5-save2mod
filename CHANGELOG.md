@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.6
+- Ruler stats rescaled: ADM = 45% stewardship + 45% learning + 10% intrigue, DIP = 85% diplomacy + 15% intrigue, MIL = 85% martial + 15% intrigue, with one multiplier per save so the best value is 100 (they were far below vanilla's).
+- Egypt no longer shows as the Mamluks when a CK3 realm takes EU5's MAM tag: EU5's MAM-only naming rules are switched off in the mod.
+- The HRE emperor's country is named after the title holding his capital, else the one holding most of his counties.
+
 ## 0.1.5
 - EU5 1.4 support: the start setup is read from and written to the bookmark's folder (`main_menu/setup/1337`). Mods made with earlier versions must be converted again.
 - CK3 1.20 support: rites (religion → faith → rite) are mapped; the religion table takes rite, faith or religion keys.

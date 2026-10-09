@@ -19,6 +19,9 @@ LANGS = ["english", "french", "german", "spanish", "polish", "russian", "simp_ch
          "japanese", "korean", "turkish", "braz_por"]
 DEFAULT_GAME_VERSION = "1.4.*"      # EU5 1.4; change in the GUI when a new patch is out
 OLD_GAME_VERSION_DEFAULTS = ("1.3.*",)   # earlier defaults; a GUI setting holding one of these is replaced
+# Tags EU5 names by tag-specific rules (MAM: "Mamluk Sultanate"); when a CK3
+# realm reuses one, those rules are switched off in the mod
+TAG_NAME_RULES = ("MAM",)
 RELIGIOUS_IOS = {"catholic_church", "autocephalous_patriarchate", "shinto"}
 
 
@@ -79,6 +82,7 @@ class ModWriter:
         self._ios()
         self._misc_setup()
         self._religious_orders()
+        self._name_rules()
         self._on_actions()
         self._coas()
         self._localization()
@@ -800,6 +804,28 @@ class ModWriter:
         if dropped:
             self.w.report.append("RELIGIOUS ORDERS without their 1337 head (the head's country is now a CK3 "
                                  "realm): " + ", ".join(dropped))
+
+    def _name_rules(self) -> None:
+        """A reused tag that EU5 names by its own rules (MAM is always 'the
+        Mamluks') is taken out of those rules: each 'tag = MAM' in EU5's
+        naming files becomes 'always = no', so the CK3 realm shows its name."""
+        tags = [t for t in TAG_NAME_RULES if t in self.w.reused_tags]
+        if not tags:
+            return
+        pat = re.compile(r"\btag\s*=\s*(" + "|".join(tags) + r")\b")
+        n = 0
+        for f in sorted(glob.glob(os.path.join(self.eu5.root, "in_game", "common", "customizable_localization",
+                                               "*.txt"))):
+            with open(f, encoding="utf-8-sig") as fh:
+                text = fh.read()
+            new, k = pat.subn("always = no", text)
+            if k:
+                with open(self.path("in_game", "common", "customizable_localization", os.path.basename(f)), "w",
+                          encoding="utf-8-sig", newline="\n") as fh:
+                    fh.write(new)
+                n += k
+        self.w.report.append(f"NAMES: EU5's own naming rules for {', '.join(tags)} switched off ({n} conditions), "
+                             f"so the CK3 realm using the tag shows its own name")
 
     def _tags_in(self, b: Block) -> set[str]:
         out: set[str] = set()

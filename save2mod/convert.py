@@ -374,8 +374,30 @@ class Converter:
         if cid == self.emperor:
             held = [t for t in self.sv.titles.values() if t.holder == cid and t.key != "e_hre" and t.tier >= 1]
             if held:
-                return max(held, key=lambda t: (t.tier, t.id)).id
+                # highest title; among equals the one holding his capital, then
+                # the one holding most of his own counties
+                cap = self._capital_chain(ch)
+                own = [t.key for t in held if t.tier == 1]
+                inside = {t.key: sum(1 for k in own if t.key in self._chain(k)) for t in held}
+                return max(held, key=lambda t: (t.tier, t.key in cap, inside[t.key], t.id)).id
         return ch.primary_title
+
+    def _capital_chain(self, ch: Character) -> set[str]:
+        """De jure titles (county upwards) above the character's realm capital."""
+        rc = ch.raw.path("landed_data", "realm_capital") if ch.raw is not None else None
+        t = self.sv.titles.get(rc) if isinstance(rc, str) else None
+        key = t.key if t is not None else (self.ck3.barony_of_province.get(int(rc))
+                                           if isinstance(rc, str) and rc.isdigit() else None)
+        return self._chain(key) if key else set()
+
+    def _chain(self, key: str) -> set[str]:
+        """The title and its de jure lieges."""
+        out: set[str] = set()
+        gt = self.ck3.titles.get(key)
+        while gt is not None and gt.key not in out:
+            out.add(gt.key)
+            gt = self.ck3.titles.get(gt.parent) if gt.parent else None
+        return out
 
     def _assign_tags(self) -> None:
         sv, eu5 = self.sv, self.eu5
@@ -895,6 +917,7 @@ class Converter:
         ruler_of: dict[str, str] = {c.ruler: tag for tag, c in w.countries.items()}
 
         aged_up: list[str] = []
+        raw: dict[str, tuple[float, float, float]] = {}     # key -> CK3-weighted (adm, dip, mil)
 
         def make(cid: str, tag: str, estate: str = "nobles_estate", min_age: float = 0.0) -> str | None:
             ch = sv.characters.get(cid)
@@ -914,10 +937,11 @@ class Converter:
             rule = self.cm.rule_for_save_culture(sv, ch.culture)
             cul = self.cm.resolve(rule, None) if rule else None
             rel = self.rm.for_save_faith(sv, ch.faith)
-            sk = (ch.skills + [0.0] * 6)[:6]         # dip mar ste int lea pro
-            dip = _clamp(round(4.0 * (0.8 * sk[0] + 0.2 * sk[3])), 0, 100)
-            mil = _clamp(round(4.0 * (0.8 * sk[1] + 0.2 * sk[5])), 0, 100)
-            adm = _clamp(round(4.0 * (0.8 * sk[2] + 0.2 * sk[4])), 0, 100)
+            sk = (ch.skills + [0.0] * 6)[:6]         # dip mar ste int lea pro (prowess unused)
+            dip = 0.85 * sk[0] + 0.15 * sk[3]
+            mil = 0.85 * sk[1] + 0.15 * sk[3]
+            adm = 0.45 * sk[2] + 0.45 * sk[4] + 0.10 * sk[3]
+            raw[key] = (adm, dip, mil)
             fname = ch.first_name or "Unknown"
             fkey = self._name_key(fname)
             dyn = self._dynasty(ch, country.capital)
@@ -926,7 +950,7 @@ class Converter:
             w.characters[key] = EU5Character(
                 key=key, ck3_id=cid, first_name=fkey, female=ch.female, birth=birth,
                 culture=cul or country.culture or "french", religion=rel or country.religion or "catholic",
-                adm=int(adm), dip=int(dip), mil=int(mil), tag=tag, dynasty=dyn, birth_loc=country.capital,
+                adm=0, dip=0, mil=0, tag=tag, dynasty=dyn, birth_loc=country.capital,
                 estate=estate)
             return key
 
@@ -950,6 +974,16 @@ class Converter:
                 if hk:
                     c.heir = hk
             c.ruler_key = rk
+        # one multiplier for the whole save: the best weighted CK3 value becomes 100
+        top = max((v for t in raw.values() for v in t), default=0.0)
+        scale = 100.0 / top if top > 0 else 1.0
+        for key, (adm, dip, mil) in raw.items():
+            c = w.characters[key]
+            c.adm, c.dip, c.mil = (int(_clamp(round(x * scale), 0, 100)) for x in (adm, dip, mil))
+        if raw:
+            w.report.append(f"STATS: ADM = 45% stewardship + 45% learning + 10% intrigue, DIP = 85% diplomacy + "
+                            f"15% intrigue, MIL = 85% martial + 15% intrigue (CK3 base skills), times {scale:.2f} "
+                            f"so the best value in this save is 100")
         if aged_up:
             w.report.append(f"RULERS aged up to {self.o.min_ruler_age} (EU5 starts have no child rulers): "
                             + ", ".join(aged_up))
