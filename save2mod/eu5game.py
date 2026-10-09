@@ -76,6 +76,7 @@ class EU5Game:
     estates: list[str] = field(default_factory=list)
     loc: dict[str, str] = field(default_factory=dict)
     start_date: str = "1337.4.1"
+    setup_rel: tuple[str, ...] = ("main_menu", "setup", "start")   # the start's setup folder (1.4+: setup/1337)
 
     # paths -----------------------------------------------------------------
     def p(self, *parts: str) -> str:
@@ -86,10 +87,10 @@ class EU5Game:
         return self.p("in_game", "map_data", "locations.png")
 
     def setup_start(self, name: str) -> str:
-        return self.p("main_menu", "setup", "start", name)
+        return self.p(*self.setup_rel, name)
 
     def setup_start_files(self) -> list[str]:
-        return sorted(os.path.basename(f) for f in glob.glob(self.p("main_menu", "setup", "start", "*.txt")))
+        return sorted(os.path.basename(f) for f in glob.glob(self.p(*self.setup_rel, "*.txt")))
 
     # helpers ---------------------------------------------------------------
     def land_locations(self) -> list[str]:
@@ -160,6 +161,26 @@ def _list_block(text_block: Block, key: str) -> set[str]:
     return out
 
 
+def _find_bookmark(g: EU5Game, log=print) -> None:
+    """EU5 1.4 moved the start setup from main_menu/setup/start to the folder
+    named by the bookmark (setup/1337). Take the bookmark of the game's start
+    date, else the first one; keep the old folder when there is none."""
+    marks: list[Block] = []
+    for f in sorted(glob.glob(g.p("main_menu", "common", "bookmarks", "*.txt"))):
+        try:
+            marks += [v for _k, v in parse_file(f).pairs() if isinstance(v, Block) and v.str("setup_folder")]
+        except Exception as e:          # noqa: BLE001
+            log(f"(could not read bookmark file {os.path.basename(f)}: {e})")
+    if not marks:
+        return
+    b = next((m for m in marks if m.str("start_date") == g.start_date), marks[0])
+    rel = ("main_menu", *b.str("setup_folder").replace("\\", "/").strip("/").split("/"))
+    if os.path.isdir(g.p(*rel)):
+        g.setup_rel = rel
+        g.start_date = b.str("start_date") or g.start_date
+    log(f"EU5: start {g.start_date}, setup in {'/'.join(g.setup_rel)}")
+
+
 def load_eu5_game(path: str, log=print, *, language: str = "english") -> EU5Game:
     root = find_game_dir(path)
     g = EU5Game(root=root)
@@ -171,6 +192,7 @@ def load_eu5_game(path: str, log=print, *, language: str = "english") -> EU5Game
         if m:
             g.start_date = m.group(1)
             break
+    _find_bookmark(g, log)
 
     # ---- named locations (colors)
     for f in sorted(glob.glob(os.path.join(md, "named_locations", "*.txt"))):

@@ -42,7 +42,7 @@ def run_conversion(paths: Paths, options: Options, log=print, progress=lambda f,
     ck3 = load_ck3_game(paths.ck3_game, log)
     progress(0.08, "Reading EU5 game files")
     eu5 = load_eu5_game(paths.eu5_game, log)
-    dlc_setup = glob.glob(os.path.join(eu5.root, "dlc", "*", "main_menu", "setup", "start", "*.txt"))
+    dlc_setup = glob.glob(os.path.join(eu5.root, "dlc", "*", *eu5.setup_rel, "*.txt"))
     warnings: list[str] = []
     if dlc_setup:
         warnings.append(f"EU5 DLC setup files found ({len(dlc_setup)}); they are not rewritten by the converter")

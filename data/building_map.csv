@@ -19,11 +19,13 @@ windmills,granary,windmill,2,3,1,
 watermills,granary,windmill,2,3,1,
 stilted_granaries,granary,farming_village,2,3,1,
 qanats,aqueduct_system,farming_village,2,3,1,
+water_temples,irrigation_systems,irrigation_systems,2,3,1,Balinese subak temples
 waterworks,aqueduct_system,,2,3,1,
 pastures,,sheep_farms,2,3,1,
 hillside_grazing,,sheep_farms,2,3,1,
 horse_pastures,horse_breeders,horse_breeders,2,3,1,
 stables,horse_breeders,horse_breeders,2,3,1,
+camel_farms,horse_breeders,horse_breeders,2,3,1,like stables
 elephant_pens,,elephant_hunting_grounds,2,3,1,
 murex_farm,,fishing_village,2,3,1,
 # ---------------- resources
@@ -44,6 +46,7 @@ khiva_bazaar,marketplace,market_village,1,3,1,
 lahur_bazaar,marketplace,market_village,1,3,1,
 caravanserai,caravan_stop,caravan_stop,8,1,1,
 common_tradeport,wharf,fishing_village,8,1,1,
+kora_kora_yards,shipyard,,8,1,1,Moluccan war-canoe yards
 guild_halls,artisan_guilds,local_markets,4,2,1,
 workshops,tools_guild,mason,2,3,1,
 smiths,weapon_guild,,2,3,1,
@@ -117,5 +120,9 @@ the_great_wall_shanhai_pass,ruined_great_wall_of_china,ruined_great_wall_of_chin
 castle,,,8,1,1,castle holding
 city,,,8,1,1,city holding
 tribe,,,8,1,1,tribal holding
+nomadic_camp,,,8,1,1,nomad holding
+herder_camp,,,8,1,1,herder holding
+longhouses,,,8,1,1,tribal infrastructure; no EU5 counterpart
+wantilan,,,8,1,1,Balinese pavilion; no EU5 counterpart
 # ---------------- any other mine (CK3 special mines)
 *_mines,,local_smelters,8,1,1,

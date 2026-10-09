@@ -29,7 +29,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="put a barony's buildings only in its main EU5 location")
     c.add_argument("--no-map-cache", action="store_true", help="recompute the map alignment")
     c.add_argument("--no-characters", action="store_true", help="let EU5 generate rulers instead of converting them")
-    c.add_argument("--game-version", default="", help="EU5 version for the mod metadata, e.g. 1.3.*")
+    c.add_argument("--ck3-title-names", action="store_true",
+                   help="use the names CK3 shows (historical names, renames) instead of CK3's default title names")
+    c.add_argument("--game-version", default="", help="EU5 version for the mod metadata, e.g. 1.4.*")
     c.add_argument("--subject-tier", choices=["county", "duchy", "kingdom", "empire"], default="kingdom",
                    help="lowest CK3 vassal tier that becomes an EU5 subject (default kingdom)")
     c.add_argument("--split-admin-realms", action="store_true",
@@ -87,7 +89,7 @@ def main(argv: list[str] | None = None) -> int:
                    subject_min_tier={"county": 1, "duchy": 2, "kingdom": 3, "empire": 4}[a.subject_tier],
                    keep_admin_realms_whole=not a.split_admin_realms, split_exclaves=not a.keep_exclaves,
                    fill_enclaves=not a.no_fill_pockets,
-                   exclave_sea_hop=a.sea_hops)
+                   exclave_sea_hop=a.sea_hops, ck3_title_names=a.ck3_title_names)
 
     def prog(f, msg=""):
         print(f"[{int(f * 100):3d}%] {msg}", flush=True)

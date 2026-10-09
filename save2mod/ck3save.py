@@ -125,6 +125,8 @@ class Title:
     capital: str | None = None            # title id (county) or province id
     name: str | None = None               # custom name (player renamed / dynamic)
     adj: str | None = None
+    shown_name: str | None = None         # the name CK3 displays (title_name_data)
+    shown_adj: str | None = None
     coa_id: str | None = None
     color: tuple[int, int, int] | None = None
     raw: Block | None = None
@@ -142,7 +144,7 @@ class Character:
     birth: str | None = None
     female: bool = False
     culture: str | None = None      # culture id (save)
-    faith: str | None = None        # faith id (save)
+    faith: str | None = None        # faith id (save); rite id in CK3 1.20+
     house: str | None = None        # dynasty_house id
     skills: list[float] = field(default_factory=list)   # dip mar ste int lea pro
     traits: list[str] = field(default_factory=list)     # trait indices (save)
@@ -168,7 +170,7 @@ class County:
     development: float | None = None
     control: float | None = None
     culture: str | None = None      # save culture id
-    faith: str | None = None        # save faith id
+    faith: str | None = None        # save faith id; rite id in CK3 1.20+
     raw: Block | None = None
 
 
@@ -200,6 +202,7 @@ class Faith:
     religion_id: str | None
     religion_tag: str | None = None
     name: str | None = None
+    rite: str | None = None         # CK3 1.20+: rite key; the record is then keyed by rite id
 
 
 @dataclass
@@ -242,7 +245,7 @@ class CK3Save:
 # -------------------------------------------------------------------- loading
 NEEDED = ("meta_data", "date", "played_character", "currently_played_characters",
           "landed_titles", "living", "provinces", "county_manager", "culture_manager",
-          "religion", "dynasties", "coat_of_arms", "traits_lookup")
+          "religion", "faiths", "rites", "dynasties", "coat_of_arms", "traits_lookup")
 
 
 def _parse_section(gs: bytes, spans: list[tuple[int, int]]) -> Block:
@@ -360,6 +363,7 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
             name=tb.str("name"), adj=tb.str("adj") or tb.str("adjective"),
             coa_id=tb.str("coat_of_arms_id"),
             color=color, raw=tb,
+            shown_name=tb.path("title_name_data", "name"), shown_adj=tb.path("title_name_data", "adj"),
         )
         sv.titles[tid] = title
         sv.title_by_key.setdefault(key, title)
@@ -378,7 +382,7 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
         ch.birth = cb.str("birth")
         ch.female = cb.str("female") == "yes"
         ch.culture = cb.str("culture")
-        ch.faith = cb.str("faith")
+        ch.faith = cb.str("faith") or cb.str("rite")
         ch.house = cb.str("dynasty_house") or cb.str("house")
         sk = cb.get("skill")
         if isinstance(sk, Block):
@@ -449,7 +453,7 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
                     if isinstance(dup, Block) and dup.str("type"):
                         bar.buildings.append(dup.str("type"))
             bar.culture = pb.str("culture")
-            bar.faith = pb.str("faith") or pb.str("religion")
+            bar.faith = pb.str("faith") or pb.str("rite") or pb.str("religion")
             sv.baronies[pid] = bar
     log(f"Provinces with data: {len(sv.baronies)}")
 
@@ -474,7 +478,7 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
                     cty.control = _num(v) if not isinstance(v, Block) else _num(v.get("value"))
                     break
             cty.culture = cb.str("culture")
-            cty.faith = cb.str("faith") or cb.str("religion")
+            cty.faith = cb.str("faith") or cb.str("rite") or cb.str("religion")
             sv.counties[key] = cty
     # county data may also live on the title itself
     for t in sv.titles.values():
@@ -493,7 +497,7 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
                     cty.control = _num(r.get(ck))
                     break
         cty.culture = cty.culture or r.str("culture")
-        cty.faith = cty.faith or r.str("faith")
+        cty.faith = cty.faith or r.str("faith") or r.str("rite")
     have_dev = sum(1 for c in sv.counties.values() if c.development is not None)
     log(f"Counties: {len(sv.counties)} ({have_dev} with development)")
     if have_dev == 0:
@@ -533,6 +537,24 @@ def load_save(path: str, log: Log = print, *, want_coas: bool = True) -> CK3Save
                 if f.religion_id:
                     f.religion_tag = rel_tags.get(f.religion_id)
                 sv.faiths[fid] = f
+        # CK3 1.20: religion -> faith -> rite, each in its own section; characters
+        # and counties point at a rite, so the records are keyed by rite id
+        fa, ri = section("faiths"), section("rites")
+        fdb = fa.path("faiths", "database") if fa is not None else None
+        rdb = ri.path("rites", "database") if ri is not None else None
+        if isinstance(fdb, Block) and isinstance(rdb, Block):
+            faith_info: dict[str, tuple[str | None, str | None, str | None]] = {}
+            for fid, fb in fdb.pairs():
+                if isinstance(fb, Block):
+                    faith_info[fid] = (fb.str("faith_type") or fb.str("tag"), fb.str("religion"), fb.str("name"))
+            for rid, rb in rdb.pairs():
+                if not isinstance(rb, Block):
+                    continue
+                ftype, relid, fname = faith_info.get(rb.str("faith") or "", (None, None, None))
+                f = Faith(id=rid, tag=ftype, template=None, religion_id=relid,
+                          name=rb.path("data", "name") or fname, rite=rb.str("rite_type"))
+                f.religion_tag = rel_tags.get(relid or "")
+                sv.faiths[rid] = f
     log(f"Faiths: {len(sv.faiths)}")
 
     # ---- dynasties / houses
@@ -670,7 +692,12 @@ def summarize_structure(path: str, out: Callable[[str], None] = print, sample_en
          pick=lambda k, v: isinstance(v, Block) and "culture_template" not in v, max_lines=25)
     rel = sect("religion")
     show("religion.religions", rel.get("religions") if isinstance(rel, Block) else None, 1, max_lines=20)
-    show("religion.faiths", rel.get("faiths") if isinstance(rel, Block) else None, sample_entries, max_lines=30)
+    if isinstance(rel, Block) and rel.get("faiths") is not None:
+        show("religion.faiths", rel.get("faiths"), sample_entries, max_lines=30)
+    else:                                   # CK3 1.20+: own sections
+        for name in ("faiths", "rites"):
+            s = sect(name)
+            show(f"{name}.database", s.get("database") if isinstance(s, Block) else None, 1, max_lines=30)
     dy = sect("dynasties")
     show("dynasties.dynasty_house", dy.get("dynasty_house") if isinstance(dy, Block) else None, sample_entries)
     show("dynasties.dynasties", dy.get("dynasties") if isinstance(dy, Block) else None, sample_entries)

@@ -1,4 +1,4 @@
-"""Read EU5's vanilla 1337 start (main_menu/setup/start) into structures the
+"""Read EU5's vanilla 1337 start (main_menu/setup/1337, or setup/start before EU5 1.4) into structures the
 converter can filter and re-emit."""
 from __future__ import annotations
 

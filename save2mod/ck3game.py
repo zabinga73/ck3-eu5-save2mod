@@ -37,6 +37,7 @@ class CK3Game:
     culture_heritage: dict[str, str] = field(default_factory=dict)
     culture_language: dict[str, str] = field(default_factory=dict)
     faith_religion: dict[str, str] = field(default_factory=dict)
+    rite_faith: dict[str, str] = field(default_factory=dict)      # CK3 1.20+
     religion_family: dict[str, str] = field(default_factory=dict)
     buildings: list[str] = field(default_factory=list)
     loc: dict[str, str] = field(default_factory=dict)
@@ -150,19 +151,31 @@ def load_ck3_game(path: str, log=print, *, language: str = "english") -> CK3Game
                 if isinstance(lang, str):
                     g.culture_language[k] = lang
 
-    # ---- faiths (faith -> religion -> family)
-    for f in glob.glob(os.path.join(root, "common", "religion", "religion_types", "*.txt")):
+    # ---- faiths (rite -> faith -> religion -> family)
+    rel_dir = os.path.join(root, "common", "religion")
+    for f in glob.glob(os.path.join(rel_dir, "religion_types", "*.txt")):
         for rk, rv in parse_file(f).pairs():
             if not isinstance(rv, Block):
                 continue
             fam = rv.get("family")
             if isinstance(fam, str):
                 g.religion_family[rk] = fam
-            faiths = rv.get("faiths")
+            faiths = rv.get("faiths")          # CK3 1.19 and older: faiths nested in their religion
             if isinstance(faiths, Block):
                 for fk, fv in faiths.pairs():
                     if isinstance(fv, Block):
                         g.faith_religion[fk] = rk
+    # CK3 1.20: faiths and rites have their own folders
+    for f in glob.glob(os.path.join(rel_dir, "faith_types", "*.txt")):
+        for fk, fv in parse_file(f).pairs():
+            if isinstance(fv, Block):
+                rk = fv.path("faith_details", "religion") or fv.str("religion")
+                if isinstance(rk, str):
+                    g.faith_religion[fk] = rk
+    for f in glob.glob(os.path.join(rel_dir, "rite_types", "*.txt")):
+        for rk, rv in parse_file(f).pairs():
+            if isinstance(rv, Block) and isinstance(rv.get("faith"), str):
+                g.rite_faith[rk] = rv.str("faith")
 
     # ---- buildings
     for f in sorted(glob.glob(os.path.join(root, "common", "buildings", "*.txt"))):
@@ -172,6 +185,6 @@ def load_ck3_game(path: str, log=print, *, language: str = "english") -> CK3Game
 
     # ---- localization
     g.loc = load_localization_dir(os.path.join(root, "localization", language))
-    log(f"CK3: {len(g.culture_heritage)} cultures, {len(g.faith_religion)} faiths, "
+    log(f"CK3: {len(g.culture_heritage)} cultures, {len(g.faith_religion)} faiths, {len(g.rite_faith)} rites, "
         f"{len(g.buildings)} building types, {len(g.loc)} loc keys")
     return g

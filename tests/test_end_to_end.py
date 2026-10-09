@@ -1,4 +1,4 @@
-"""End-to-end run on the real EU5 1.3 text files + real CK3 title data with a
+"""End-to-end run on the real EU5 text files + real CK3 title data with a
 generated CK3 save. The map alignment step is replaced by a name/hierarchy
 based mapping (the real bitmaps are not available in CI), everything after
 that is the production code path. The output mod is then validated for
@@ -111,7 +111,7 @@ def run(out_dir: str, **opt):
 
 def validate(eu5, world, root) -> list[str]:
     errs: list[str] = []
-    start = os.path.join(root, "main_menu", "setup", "start")
+    start = os.path.join(root, *eu5.setup_rel)
     parsed = {}
     for fn in sorted(os.listdir(start)):
         parsed[fn] = parse_file(os.path.join(start, fn))
@@ -148,7 +148,7 @@ def validate(eu5, world, root) -> list[str]:
     chars_order: list[str] = []
     db = parsed["05_characters.txt"].block("character_db")
     seen = set()
-    vanilla_db = parse_file(os.path.join(EU5_ROOT, "main_menu", "setup", "start", "05_characters.txt")).block("character_db")
+    vanilla_db = parse_file(eu5.setup_start("05_characters.txt")).block("character_db")
     vanilla_keys = set(vanilla_db.keys())
     out_keys = set(db.keys())
     for key, cb in db.pairs():

@@ -198,6 +198,13 @@ class ReligionMapper:
             m = by_norm.get(norm(f)) or by_name.get(norm(ck3.loc.get(f, f)))
             if m:
                 self.map[f] = m
+        # CK3 1.20 rites: only a rite whose name matches an EU5 religion gets its
+        # own entry; the others fall back to their faith's row
+        for rite in ck3.rite_faith:
+            if rite not in self.map:
+                m = by_norm.get(norm(rite)) or by_name.get(norm(ck3.loc.get(rite, rite)))
+                if m:
+                    self.map[rite] = m
 
     def for_faith_key(self, faith: str | None, religion: str | None = None) -> str | None:
         if faith and faith in self.map:
@@ -213,8 +220,8 @@ class ReligionMapper:
         f = save.faiths.get(fid)
         if f is None:
             return None
-        rel_key = f.religion_tag or (self.ck3.faith_religion.get(f.template or "") if f.template else None)
-        for key in (f.tag, f.template):
+        rel_key = f.religion_tag or self.ck3.faith_religion.get(f.template or f.tag or "")
+        for key in (f.rite, f.tag, f.template):
             if key and key in self.map:
                 return self.map[key]
         out = self.for_faith_key(f.template or f.tag, rel_key)

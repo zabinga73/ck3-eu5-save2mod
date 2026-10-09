@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.5
+- EU5 1.4 support: the start setup is read from and written to the bookmark's folder (`main_menu/setup/1337`). Mods made with earlier versions must be converted again.
+- CK3 1.20 support: rites (religion → faith → rite) are mapped; the religion table takes rite, faith or religion keys.
+- Religious orders whose 1337 head belonged to a country now ruled from CK3 start without a head; the self-check verifies order heads.
+- CK3 ecclesiastical government becomes a theocracy; steppe administrative realms become hordes and keep their governors' land.
+- New table rows: Miaphysite rites, Hussites, pre-schism Christianity, camel farms, water temples, kora-kora yards; nomad and herder camps, longhouses and wantilan are skipped.
+- Option to name countries as CK3 shows them (historical names, renames).
+- Mod metadata defaults to EU5 1.4.
+
 ## 0.1.4
 - Renamed to CK3 EU5 Save-2-Mod (package `save2mod`, command `python -m save2mod`, data folder `~/.save2mod`, moved automatically from `~/.ck3toeu5`).
 

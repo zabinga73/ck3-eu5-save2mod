@@ -19,6 +19,7 @@ from . import __version__
 from . import paths as P
 from .convert import Options
 from .mappings import PKG_DATA, tables_dir
+from .writer import DEFAULT_GAME_VERSION, OLD_GAME_VERSION_DEFAULTS
 
 SETTINGS = os.path.join(os.path.dirname(tables_dir()), "settings.json")
 
@@ -342,7 +343,7 @@ class MainWindow(QMainWindow):
         self.dev_mult.setValue(1.0)
         grid.addWidget(self.dev_mult, row + 2, 1)
         grid.addWidget(QLabel("Mod targets EU5 version"), row + 3, 0)
-        self.game_version = QLineEdit("1.3.*")
+        self.game_version = QLineEdit(DEFAULT_GAME_VERSION)
         self.game_version.setToolTip("Written to the mod's metadata so the launcher doesn't flag it as outdated")
         grid.addWidget(self.game_version, row + 3, 1)
         self.chars = QCheckBox("Convert rulers, consorts && heirs (off = EU5 generates random rulers)")
@@ -373,8 +374,12 @@ class MainWindow(QMainWindow):
                                 "per pocket; each takes the CK3 barony it borders most")
         self.pockets.setChecked(True)
         grid.addWidget(self.pockets, row + 7, 0, 1, 2)
+        self.title_names = QCheckBox("Use CK3's displayed title names (historical names like West Francia, renames)")
+        self.title_names.setToolTip("New countries take the name CK3 shows; reused EU5 countries only when it "
+                                    "differs from CK3's default name for the title")
+        grid.addWidget(self.title_names, row + 8, 0, 1, 2)
         self.recompute_map = QCheckBox("Recompute map alignment (ignore cache)")
-        grid.addWidget(self.recompute_map, row + 8, 0)
+        grid.addWidget(self.recompute_map, row + 9, 0)
         lay.addWidget(o)
 
         btns = QHBoxLayout()
@@ -426,8 +431,10 @@ class MainWindow(QMainWindow):
         self.sea_hops.setValue(int(s.get("sea_hops", 2)))
         self.pockets.setChecked(bool(s.get("pockets", True)))
         self.dev_mult.setValue(s.get("dev_mult", 1.0))
-        self.game_version.setText(s.get("game_version", "1.3.*"))
+        gv = s.get("game_version", "")
+        self.game_version.setText(gv if gv and gv not in OLD_GAME_VERSION_DEFAULTS else DEFAULT_GAME_VERSION)
         self.chars.setChecked(bool(s.get("chars", True)))
+        self.title_names.setChecked(bool(s.get("title_names", False)))
 
     def _store(self):
         self.settings.update({
@@ -438,7 +445,8 @@ class MainWindow(QMainWindow):
             "subject_tier": int(self.sub_tier.currentData()), "dev_mult": self.dev_mult.value(),
             "admin_whole": self.admin_whole.isChecked(), "exclaves": self.exclaves.isChecked(),
             "sea_hops": self.sea_hops.value(), "pockets": self.pockets.isChecked(),
-            "game_version": self.game_version.text().strip(), "chars": self.chars.isChecked()})
+            "game_version": self.game_version.text().strip(), "chars": self.chars.isChecked(),
+            "title_names": self.title_names.isChecked()})
         save_settings(self.settings)
 
     def options(self) -> Options:
@@ -452,7 +460,8 @@ class MainWindow(QMainWindow):
             fill_enclaves=self.pockets.isChecked(),
             exclave_sea_hop=self.sea_hops.value(),
             dev_multiplier=self.dev_mult.value(), mod_name=self.name.text().strip() or "CK3 Conversion",
-            convert_characters=self.chars.isChecked(), game_version=self.game_version.text().strip())
+            convert_characters=self.chars.isChecked(), game_version=self.game_version.text().strip(),
+            ck3_title_names=self.title_names.isChecked())
 
     # ------------------------------------------------------------ actions
     @Slot(str)

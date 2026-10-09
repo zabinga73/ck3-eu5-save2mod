@@ -1,12 +1,13 @@
 ck3,eu5,note
 # Curated CK3 faith -> EU5 religion table.
-# Keys may be a CK3 faith (catholic) or a CK3 religion (christianity_religion);
-# a faith row wins over its religion row. Rows marked "approximate" are best guesses
+# Keys may be a CK3 rite (CK3 1.20+: insular_celtic), faith (catholic) or religion
+# (christianity_religion); a rite row wins over its faith row, a faith row over its religion row. Rows marked "approximate" are best guesses
 # picks for faiths with no EU5 counterpart.
 # --- Christianity
 catholic,catholic,
 orthodox,orthodox,
-coptic,miaphysite,
+coptic,miaphysite,CK3 1.19 and older
+miaphysitism,miaphysite,CK3 1.20: Coptic/Antiochian/Ethiopian rites
 armenian_apostolic,miaphysite,
 nestorian,nestorianism,
 bogomilist,bogomilism,
@@ -14,6 +15,7 @@ bosnian_church,bosnian_church,
 cathar,catharism,
 waldensian,waldensian,
 lollard,lollardy,user: keep Lollardy
+hussite,hussite,like Lollardy
 paulician,paulicianism,
 adamites,catharism,user: nearest EU5 heresy
 adoptionist,nestorianism,user: nearest EU5 heresy (similar christology)
@@ -22,6 +24,7 @@ iconoclast,paulicianism,user: nearest EU5 heresy (iconoclastic)
 insular_celtic,catholic,no EU5 heresy fits
 messalian,bogomilism,user: nearest EU5 heresy
 mozarabic_church,catholic,no EU5 heresy fits
+christian_faith,catholic,CK3 1.20: pre-schism Christianity (Beneventan/Carolingian rites)
 christianity_religion,catholic,fallback for custom Christian faiths
 # --- Islam
 ashari,sunni,

@@ -39,6 +39,7 @@ class Options:
     convert_characters: bool = True
     set_heirs: bool = False            # EU5 normally derives heirs itself; vanilla rarely sets them
     min_ruler_age: int = 16            # vanilla 1337 has no child rulers; younger CK3 rulers are aged up
+    ck3_title_names: bool = False      # use the save's displayed title names (historical names, renames)
     mod_name: str = "CK3 Conversion"
     game_version: str = ""             # for .metadata; "" = auto-detect
 
@@ -206,10 +207,27 @@ class Converter:
         for r in read_table("title_tags.csv"):
             if r.get("ck3_title") and (r.get("name") or r.get("adjective")):
                 self.name_over[r["ck3_title"]] = (r.get("name", ""), r.get("adjective", ""))
+        if self.o.ck3_title_names:
+            self._use_displayed_names()
         for p in self.cm.problems + self.rm.problems + self.bm.problems:
             self.w.report.append("TABLE: " + p)
             if "Reset to defaults" in p:
                 log("NOTE: " + p)
+
+    def _use_displayed_names(self) -> None:
+        """A title whose displayed name in the save differs from CK3's default
+        for it (a historical name like West Francia, or a rename) is named by
+        it, like a renamed title; the others keep their default name."""
+        n = 0
+        for t in self.sv.titles.values():
+            if t.name or not t.shown_name:
+                continue
+            default = _clean_loc(resolve(self.ck3.loc, t.key) or "")
+            if norm(t.shown_name) != norm(default):
+                t.name = t.shown_name
+                t.adj = t.adj or t.shown_adj
+                n += 1
+        self.log(f"Titles named as CK3 shows them: {n}")
 
     # --------------------------------------------------------------- run
     def run(self) -> World:
@@ -573,7 +591,7 @@ class Converter:
                             f"({cu.template or cu.name if cu else '?'}); kept vanilla culture there")
         for fid in sorted(unmapped_faith):
             f = sv.faiths.get(fid)
-            w.report.append(f"RELIGION: no EU5 match for CK3 faith {fid} ({f.tag if f else '?'}); kept vanilla religion")
+            w.report.append(f"RELIGION: no EU5 match for CK3 faith {fid} ({(f.rite or f.tag) if f else '?'}); kept vanilla religion")
         if skipped_buildings:
             top = sorted(skipped_buildings.items(), key=lambda kv: -kv[1])[:40]
             w.report.append("BUILDINGS without a mapping (skipped): " +
@@ -737,17 +755,17 @@ class Converter:
 
     def _is_admin(self, cid: str | None) -> bool:
         g = self._gov_str(self.sv.characters.get(cid) if cid else None)
-        return "administrative" in g or "celestial" in g
+        return "administrative" in g or "celestial" in g or "steppe_admin" in g
 
     def _gov_type(self, ch: Character | None) -> str:
         g = self._gov_str(ch)
         if "republic" in g:
             t = "republic"
-        elif "theocra" in g or "holy_order" in g:
+        elif "theocra" in g or "holy_order" in g or "ecclesiastical" in g:
             t = "theocracy"
         elif "tribal" in g:
             t = "tribe"
-        elif "nomad" in g or "herder" in g:
+        elif "nomad" in g or "herder" in g or "steppe" in g:
             t = "steppe_horde"
         else:
             t = "monarchy"

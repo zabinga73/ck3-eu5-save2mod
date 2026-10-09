@@ -1,6 +1,7 @@
 """Write the converted world out as an EU5 mod."""
 from __future__ import annotations
 
+import glob
 import json
 import os
 import re
@@ -16,7 +17,8 @@ from .vanilla import (VanillaSetup, OWN_KEYS, CONTROL_KEYS, CORE_KEYS, date_tupl
 
 LANGS = ["english", "french", "german", "spanish", "polish", "russian", "simp_chinese",
          "japanese", "korean", "turkish", "braz_por"]
-DEFAULT_GAME_VERSION = "1.3.*"      # EU5 1.3.x "Pavia"; change in the GUI when a new patch is out
+DEFAULT_GAME_VERSION = "1.4.*"      # EU5 1.4; change in the GUI when a new patch is out
+OLD_GAME_VERSION_DEFAULTS = ("1.3.*",)   # earlier defaults; a GUI setting holding one of these is replaced
 RELIGIOUS_IOS = {"catholic_church", "autocephalous_patriarchate", "shinto"}
 
 
@@ -76,6 +78,7 @@ class ModWriter:
         self._diplomacy()
         self._ios()
         self._misc_setup()
+        self._religious_orders()
         self._on_actions()
         self._coas()
         self._localization()
@@ -180,7 +183,7 @@ class ModWriter:
             b.add("tag", c.tag)
             keep.add(c.key, b)
         out = Block([("character_db", "=", keep)])
-        self.write_block(("main_menu", "setup", "start", "05_characters.txt"), out,
+        self.write_block((*self.eu5.setup_rel, "05_characters.txt"), out,
                          "# Rewritten by save2mod: vanilla characters of replaced countries removed,\n"
                          "# converted CK3 rulers/consorts/heirs appended. Children after parents.")
         self.log(f"Characters: removed {len(self.removed_chars)} vanilla, added {len(self.w.characters)} from CK3")
@@ -199,7 +202,7 @@ class ModWriter:
             if d.get("home"):
                 b.add("home", d["home"])
             dm.add(key, b)
-        self.write_block(("main_menu", "setup", "start", "04_dynasties.txt"), Block([("dynasty_manager", "=", dm)]))
+        self.write_block((*self.eu5.setup_rel, "04_dynasties.txt"), Block([("dynasty_manager", "=", dm)]))
 
     # ---------------------------------------------------------- countries
     def _countries_setup(self) -> None:
@@ -245,7 +248,7 @@ class ModWriter:
             inner.add(tag, self._country_block(c))
         top = Block(list(self.v.top_of_10))
         top.add("countries", Block([("countries", "=", inner)]))
-        self.write_block(("main_menu", "setup", "start", "10_countries.txt"), top)
+        self.write_block((*self.eu5.setup_rel, "10_countries.txt"), top)
 
     def _best_capital(self, locs: list[str]) -> str:
         rank = {"megalopolis": 3, "city": 2, "town": 1}
@@ -425,7 +428,7 @@ class ModWriter:
                 for p in pops:
                     lb.add("define_pop", p)
             locs.add(loc, lb)
-        self.write_block(("main_menu", "setup", "start", "06_pops.txt"), Block([("locations", "=", locs)]))
+        self.write_block((*self.eu5.setup_rel, "06_pops.txt"), Block([("locations", "=", locs)]))
 
     # ---------------------------------------------------------- buildings
     def _cities_and_buildings(self) -> None:
@@ -487,7 +490,7 @@ class ModWriter:
                 manager.add(bk, Block([("tag", "=", tag), ("level", "=", str(lvl)), ("location", "=", loc)]))
                 n += 1
         out = Block([("locations", "=", loc_block), ("building_manager", "=", manager)])
-        self.write_block(("main_menu", "setup", "start", "07_cities_and_buildings.txt"), out)
+        self.write_block((*self.eu5.setup_rel, "07_cities_and_buildings.txt"), out)
         self.log(f"Buildings: {n} placed in converted land")
 
     def _owner_of_uncovered(self, loc: str) -> str | None:
@@ -538,7 +541,7 @@ class ModWriter:
                 val = sum(v for u, v in hist.items() if l in self._units_of(l, u))
                 if val:
                     out.add(l, fmt_value(round(val, 3)))
-        self.write_block(("main_menu", "setup", "start", "14_development.txt"), Block([("development", "=", out)]),
+        self.write_block((*self.eu5.setup_rel, "14_development.txt"), Block([("development", "=", out)]),
                          "# save2mod: CK3 county development replaces EU5's regional/area history values;\n"
                          "# terrain, coast, river, road and rank modifiers are unchanged.")
 
@@ -593,7 +596,7 @@ class ModWriter:
                 dm.add("dependency", Block([("first", "=", c.overlord), ("second", "=", tag),
                                             ("subject_type", "=", w.options.subject_type),
                                             ("start_date", "=", _minus_years(start, 1))]))
-        self.write_block(("main_menu", "setup", "start", "12_diplomacy.txt"), Block([("diplomacy_manager", "=", dm)]))
+        self.write_block((*self.eu5.setup_rel, "12_diplomacy.txt"), Block([("diplomacy_manager", "=", dm)]))
         for name in ("18_opinions.txt", "20_rivals.txt"):
             src = self.v.files.get(name)
             if src is None:
@@ -605,7 +608,7 @@ class ModWriter:
                     if not all(self._tag_ok(t) for t in tags if t):
                         continue
                 dm2.items.append((k, op, v))
-            self.write_block(("main_menu", "setup", "start", name), Block([("diplomacy_manager", "=", dm2)]))
+            self.write_block((*self.eu5.setup_rel, name), Block([("diplomacy_manager", "=", dm2)]))
 
     # ----------------------------------------------- international orgs
     def _ios(self) -> None:
@@ -651,7 +654,7 @@ class ModWriter:
                 else:
                     nb.items.append((kk, oo, vv))
             mgr.add(k, nb)
-        self.write_block(("main_menu", "setup", "start", "15_international_organizations.txt"),
+        self.write_block((*self.eu5.setup_rel, "15_international_organizations.txt"),
                          Block([("international_organization_manager", "=", mgr)]))
 
     def _hre_block(self, vanilla_io: Block) -> Block:
@@ -705,11 +708,11 @@ class ModWriter:
         # 02_core: saints of removed countries lose their country link
         src = self.v.files.get("02_core.txt")
         if src is not None:
-            self.write_block(("main_menu", "setup", "start", "02_core.txt"), self._scrub(src))
+            self.write_block((*self.eu5.setup_rel, "02_core.txt"), self._scrub(src))
         # 11_art: drop removed artists
         src = self.v.files.get("11_art.txt")
         if src is not None:
-            self.write_block(("main_menu", "setup", "start", "11_art.txt"), self._scrub(src))
+            self.write_block((*self.eu5.setup_rel, "11_art.txt"), self._scrub(src))
         # 13_religion: seats of cardinal etc.
         src = self.v.files.get("13_religion.txt")
         if src is not None:
@@ -727,7 +730,7 @@ class ModWriter:
                 elif tag and tag not in self.alive_tags:
                     continue
                 mgr.add(bt, bb)
-            self.write_block(("main_menu", "setup", "start", "13_religion.txt"), Block([("building_manager", "=", mgr)]))
+            self.write_block((*self.eu5.setup_rel, "13_religion.txt"), Block([("building_manager", "=", mgr)]))
         # 16_wars: only wars/truces fully between surviving vanilla countries
         src = self.v.files.get("16_wars.txt")
         if src is not None:
@@ -738,7 +741,7 @@ class ModWriter:
                     if not all(self._tag_ok(t) for t in tags):
                         continue
                 mgr.items.append((k, op, wb))
-            self.write_block(("main_menu", "setup", "start", "16_wars.txt"), Block([("war_manager", "=", mgr)]))
+            self.write_block((*self.eu5.setup_rel, "16_wars.txt"), Block([("war_manager", "=", mgr)]))
         # 23_colonies
         src = self.v.files.get("23_colonies.txt")
         if src is not None:
@@ -747,7 +750,7 @@ class ModWriter:
                 if isinstance(cb, Block) and cb.str("tag") and not self._tag_ok(cb.str("tag")):
                     continue
                 mgr.items.append((k, op, cb))
-            self.write_block(("main_menu", "setup", "start", "23_colonies.txt"), Block([("colony_manager", "=", mgr)]))
+            self.write_block((*self.eu5.setup_rel, "23_colonies.txt"), Block([("colony_manager", "=", mgr)]))
         # 25 / 26: per-tag country blocks
         for name in ("25_area_preferences.txt", "26_ai_personalities.txt"):
             src = self.v.files.get(name)
@@ -761,7 +764,7 @@ class ModWriter:
                     kept = Block([(t, o2, b2) for t, o2, b2 in target.items if t is None or t in self.alive_tags])
                     v = Block([("countries", "=", kept)]) if isinstance(inner, Block) else kept
                 out.items.append((k, op, v))
-            self.write_block(("main_menu", "setup", "start", name), out)
+            self.write_block((*self.eu5.setup_rel, name), out)
         # 27_armies: armies of surviving vanilla countries on their own land only
         src = self.v.files.get("27_armies.txt")
         if src is not None:
@@ -775,7 +778,28 @@ class ModWriter:
                     if loc and loc in w.covered:
                         continue
                 mgr.items.append((k, op, ab))
-            self.write_block(("main_menu", "setup", "start", "27_armies.txt"), Block([("unit_manager", "=", mgr)]))
+            self.write_block((*self.eu5.setup_rel, "27_armies.txt"), Block([("unit_manager", "=", mgr)]))
+
+    def _religious_orders(self) -> None:
+        """EU5 1.4 religious orders name a vanilla character as head; one that
+        was removed (a living character of a reused tag) is dropped from the
+        order, which then starts without a head like the Order of Avis."""
+        dropped: list[str] = []
+        for f in sorted(glob.glob(os.path.join(self.eu5.root, "in_game", "setup", "religious_orders", "*.txt"))):
+            src = parse_file(f)
+            out = Block()
+            changed = False
+            for k, op, ob in src.items:
+                if isinstance(ob, Block) and ob.str("head_character") in self.removed_chars:
+                    ob = Block([it for it in ob.items if it[0] != "head_character"])
+                    dropped.append(k)
+                    changed = True
+                out.items.append((k, op, ob))
+            if changed:
+                self.write_block(("in_game", "setup", "religious_orders", os.path.basename(f)), out, bom=True)
+        if dropped:
+            self.w.report.append("RELIGIOUS ORDERS without their 1337 head (the head's country is now a CK3 "
+                                 "realm): " + ", ".join(dropped))
 
     def _tags_in(self, b: Block) -> set[str]:
         out: set[str] = set()

@@ -25,15 +25,17 @@ TAG_RE = re.compile(r"[A-Z][A-Z0-9]{2}")
 class Setup:
     files: dict[str, Block] = field(default_factory=dict)
     defs: set[str] = field(default_factory=set)
+    orders: dict[str, Block] = field(default_factory=dict)     # EU5 1.4+ religious orders
 
 
-def _effective_setup(eu5_root: str, mod_root: str | None) -> Setup:
+def _effective_setup(eu5, mod_root: str | None) -> Setup:
+    eu5_root = eu5.root
     s = Setup()
     names: dict[str, str] = {}
-    for f in glob.glob(os.path.join(eu5_root, "main_menu", "setup", "start", "*.txt")):
+    for f in glob.glob(os.path.join(eu5_root, *eu5.setup_rel, "*.txt")):
         names[os.path.basename(f)] = f
     if mod_root:
-        for f in glob.glob(os.path.join(mod_root, "main_menu", "setup", "start", "*.txt")):
+        for f in glob.glob(os.path.join(mod_root, *eu5.setup_rel, "*.txt")):
             names[os.path.basename(f)] = f
     for n, f in sorted(names.items()):
         try:
@@ -47,6 +49,16 @@ def _effective_setup(eu5_root: str, mod_root: str | None) -> Setup:
     if mod_root:
         for f in glob.glob(os.path.join(mod_root, "in_game", "setup", "countries", "*.txt")):
             defs[os.path.basename(f)] = f
+    orders: dict[str, str] = {}
+    for root in (eu5_root, mod_root):
+        if root:
+            for f in glob.glob(os.path.join(root, "in_game", "setup", "religious_orders", "*.txt")):
+                orders[os.path.basename(f)] = f
+    for f in orders.values():
+        try:
+            s.orders.update((k, v) for k, v in parse_file(f).pairs() if isinstance(v, Block))
+        except Exception:               # noqa: BLE001
+            pass
     for f in defs.values():
         try:
             s.defs |= {k for k, _o, v in parse_file(f).items if k and isinstance(v, Block)}
@@ -165,6 +177,12 @@ def _check(s: Setup, eu5) -> list[str]:
                 out.append(f"05_characters: {k} {f} {v} is not a location")
         seen.add(k)
 
+    # --- religious orders (EU5 1.4+): the head must be a setup character
+    for k, ob in s.orders.items():
+        h = ob.get("head_character")
+        if isinstance(h, str) and h not in chars:
+            out.append(f"religious_orders: {k} head_character {h} not in 05_characters")
+
     # --- pops
     for l, lb in s.files.get("06_pops.txt", Block()).block("locations").pairs():
         if l not in locs:
@@ -227,9 +245,9 @@ def check_mod(mod_root: str, eu5) -> tuple[list[str], dict[str, int]]:
     """Problems in the mod's setup that vanilla doesn't have, plus some counts."""
     base = _BASELINE.get(eu5.root)
     if base is None:
-        base = set(_check(_effective_setup(eu5.root, None), eu5))
+        base = set(_check(_effective_setup(eu5, None), eu5))
         _BASELINE[eu5.root] = base
-    s = _effective_setup(eu5.root, mod_root)
+    s = _effective_setup(eu5, mod_root)
     found = [p for p in dict.fromkeys(_check(s, eu5)) if p not in base]
     countries = s.files.get("10_countries.txt", Block()).path("countries", "countries")
     stats = {

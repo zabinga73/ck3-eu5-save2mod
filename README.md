@@ -2,7 +2,7 @@
 
 Converts a Crusader Kings III save into a Europa Universalis V mod. The mod keeps EU5's map and 1337 start, and replaces the land covered by the CK3 map with the realms, rulers, cultures, religions, development, control and buildings from the save.
 
-Version 0.1.4. Targets EU5 1.3 and CK3 1.19.
+Version 0.1.5. Targets EU5 1.4 and CK3 1.20 (older CK3 saves still load).
 
 ## Requirements
 
@@ -62,7 +62,7 @@ Ironman saves are binary and must be converted to text first with [rakaly](https
 The **Mappings** tab edits the tables used by the conversion:
 
 - `culture_map.csv`: CK3 culture → EU5 culture
-- `religion_map.csv`: CK3 faith → EU5 religion
+- `religion_map.csv`: CK3 rite, faith or religion → EU5 religion
 - `building_map.csv`: CK3 building → EU5 building
 - `title_tags.csv` (Realms & tags): per-realm EU5 tag and name overrides; filled with every realm after each conversion
 
