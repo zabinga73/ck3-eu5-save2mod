@@ -41,6 +41,7 @@ class Options:
     min_ruler_age: int = 16            # vanilla 1337 has no child rulers; younger CK3 rulers are aged up
     ck3_title_names: bool = False      # use the save's displayed title names (historical names, renames)
     own_names_for_tag_rules: bool = True   # switch off EU5's tag-specific naming (MAM -> Mamluks) for reused tags
+    strip_tag_government: bool = False     # a reused MAM loses vanilla's Mamluk reform, laws and regnal numbers
     mod_name: str = "CK3 Conversion"
     game_version: str = ""             # for .metadata; "" = auto-detect
 

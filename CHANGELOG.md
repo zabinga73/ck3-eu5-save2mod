@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.8
+- Option to drop vanilla's Mamluk government reform, laws and regnal numbers from a CK3 realm on the MAM tag (off by default).
+
 ## 0.1.7
 - The Egypt/Mamluks name fix is an option (on by default).
 

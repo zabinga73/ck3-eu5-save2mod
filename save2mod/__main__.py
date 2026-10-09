@@ -33,6 +33,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="use the names CK3 shows (historical names, renames) instead of CK3's default title names")
     c.add_argument("--eu5-tag-names", action="store_true",
                    help="keep EU5's tag-specific naming rules for reused tags (a CK3 Egypt on MAM shows as the Mamluks)")
+    c.add_argument("--strip-mamluk-government", action="store_true",
+                   help="a CK3 realm on EU5's MAM tag drops vanilla's Mamluk reform, laws and regnal numbers")
     c.add_argument("--game-version", default="", help="EU5 version for the mod metadata, e.g. 1.4.*")
     c.add_argument("--subject-tier", choices=["county", "duchy", "kingdom", "empire"], default="kingdom",
                    help="lowest CK3 vassal tier that becomes an EU5 subject (default kingdom)")
@@ -92,7 +94,8 @@ def main(argv: list[str] | None = None) -> int:
                    keep_admin_realms_whole=not a.split_admin_realms, split_exclaves=not a.keep_exclaves,
                    fill_enclaves=not a.no_fill_pockets,
                    exclave_sea_hop=a.sea_hops, ck3_title_names=a.ck3_title_names,
-                   own_names_for_tag_rules=not a.eu5_tag_names)
+                   own_names_for_tag_rules=not a.eu5_tag_names,
+                   strip_tag_government=a.strip_mamluk_government)
 
     def prog(f, msg=""):
         print(f"[{int(f * 100):3d}%] {msg}", flush=True)

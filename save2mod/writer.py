@@ -22,6 +22,9 @@ OLD_GAME_VERSION_DEFAULTS = ("1.3.*",)   # earlier defaults; a GUI setting holdi
 # Tags EU5 names by tag-specific rules (MAM: "Mamluk Sultanate"); when a CK3
 # realm reuses one, those rules are switched off in the mod
 TAG_NAME_RULES = ("MAM",)
+# Government pieces only vanilla's own country has: (reforms, law key prefix);
+# removed from a reused tag when Options.strip_tag_government is on
+TAG_GOVERNMENT = {"MAM": ({"mamluk_government"}, "mamluk_")}
 RELIGIOUS_IOS = {"catholic_church", "autocephalous_patriarchate", "shinto"}
 
 
@@ -319,12 +322,22 @@ class ModWriter:
         keep_vanilla_gov = isinstance(base, Block) and bool(c.includes) and \
             self._vanilla_religion_matches(c) and self._vanilla_gov_type(c) == c.gov_type
         if keep_vanilla_gov:
+            strip = TAG_GOVERNMENT.get(c.tag) if self.w.options.strip_tag_government else None
             for k, op, v in base.items:
                 if k in ("ruler", "consort", "heir", "active_regent", "designated_heir_reason", "type",
                          "heir_selection"):
                     continue
                 if k == "ruler_term":
                     continue
+                if strip:
+                    if k == "regnal_numbers":
+                        continue
+                    if k == "reforms" and isinstance(v, Block):
+                        v = Block([it for it in v.items if it[2] not in strip[0]])
+                        if not v.items:
+                            continue
+                    elif k == "laws" and isinstance(v, Block):
+                        v = Block([it for it in v.items if not (it[0] or "").startswith(strip[1])])
                 gov.items.append((k, op, v))
         gov.add("type", c.gov_type)
         if c.heir_selection:
